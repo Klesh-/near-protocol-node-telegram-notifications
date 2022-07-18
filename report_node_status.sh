@@ -1,13 +1,9 @@
 #!/bin/bash
-
-TG_TOKEN="<tg_bot_token>"
-TG_CHAT_ID="<tg_chat_id>"
-POOL_ID="<pool_name>"
-NODE_RPC="127.0.0.1:3030"
+source .env
 
 function notify() {
   echo "Send notify $*"
-  curl -s --get "https://api.telegram.org/bot$TG_TOKEN/sendMessage" \
+  curl -s --get "https://api.telegram.org/bot$TG_API_KEY/sendMessage" \
     --data-urlencode "chat_id=$TG_CHAT_ID" \
     --data-urlencode "text=$*"
 }
@@ -63,17 +59,19 @@ function check_validator_status() {
 
   LAST_BLOCK=$(cat node.blocks)
   NOW_BLOCK=$(echo "$CURRENT_VALIDATOR" | jq -c ".num_produced_blocks")
+  EXP_BLOCK=$(echo "$CURRENT_VALIDATOR" | jq -c ".num_expected_blocks")
 
   if [ "$LAST_BLOCK" != "$NOW_BLOCK" ]; then
-    notify "Produced blocks changed: $NOW_BLOCK"
+    notify "📦 Produced blocks changed: $NOW_BLOCK/$EXP_BLOCK"
     echo "$NOW_BLOCK" > node.blocks
   fi
 
   LAST_CHUNKS=$(cat node.chunks)
   NOW_CHUNKS=$(echo "$CURRENT_VALIDATOR" | jq -c ".num_produced_chunks")
+  EXP_CHUNKS=$(echo "$CURRENT_VALIDATOR" | jq -c ".num_expected_chunks")
 
   if [ "$LAST_CHUNKS" != "$NOW_CHUNKS" ]; then
-    notify "Produced chunks changed: $NOW_CHUNKS"
+    notify "Produced chunks changed: $NOW_CHUNKS/$EXP_CHUNKS"
     echo "$NOW_CHUNKS" > node.chunks
   fi
 }
