@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TG_TOKEN="<tg_bot_token>
+TG_TOKEN="<tg_bot_token>"
 TG_CHAT_ID="<tg_chat_id>"
 POOL_ID="<pool_name>"
 NODE_RPC="127.0.0.1:3030"
