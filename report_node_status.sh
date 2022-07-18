@@ -11,7 +11,7 @@ function notify() {
 function check_online() {
   R=$(curl -s http://$NODE_RPC/status | jq .version)
 
-  LAST=$(cat node.status)
+  LAST=$(cat state.status)
   NOW="0"
   if [ -n "$R" ]; then
     NOW="1"
@@ -19,11 +19,11 @@ function check_online() {
 
   if [ "$LAST" != "$NOW" ]; then
     if [ "$NOW" == "0" ]; then
-      notify "🚨 Node status changed: <b>OFFLINE</b>"
+      notify "🚨 Node status changed: OFFLINE"
     else
-      notify "✅ Node status changed: <b>ONLINE</b>"
+      notify "✅ Node status changed: ONLINE"
     fi
-    echo "$NOW" > node.status
+    echo "$NOW" > state.status
   fi
 }
 
@@ -36,8 +36,8 @@ function check_validator_status() {
 
   echo "$VALIDATORS | $CURRENT_VALIDATOR | $NEXT_VALIDATORS | $CURRENT_PROPOSALS | $KICK_REASON"
 
-  LAST_POS=$(cat node.position)
-  NOW_POS=""
+  LAST_POS=$(cat state.position)
+  NOW_POS="Not listed"
 
   [ -n "$CURRENT_VALIDATOR" ] && [ -z "$NOW_POS" ] && NOW_POS="✅ Validator"
   [ -n "$NEXT_VALIDATORS" ] && [ -z "$NOW_POS" ] && NOW_POS="🚀 Joining"
@@ -46,45 +46,17 @@ function check_validator_status() {
 
   if [ "$LAST_POS" != "$NOW_POS" ]; then
     notify "ℹ️ Position changed: $NOW_POS"
-    echo "$NOW_POS" > node.position
+    echo "$NOW_POS" > state.position
   fi
 
-  LAST_STAKE=$(cat node.stake)
+  LAST_STAKE=$(cat state.stake)
   NOW_STAKE=$(echo "$CURRENT_VALIDATOR" | jq -c ".stake")
 
   if [ "$LAST_STAKE" != "$NOW_STAKE" ]; then
     notify "💰 Stake changed: $NOW_STAKE"
-    echo "$NOW_STAKE" > node.stake
-  fi
-
-  LAST_BLOCK=$(cat node.blocks)
-  NOW_BLOCK=$(echo "$CURRENT_VALIDATOR" | jq -c ".num_produced_blocks")
-  EXP_BLOCK=$(echo "$CURRENT_VALIDATOR" | jq -c ".num_expected_blocks")
-
-  if [ "$LAST_BLOCK" != "$NOW_BLOCK" ]; then
-    notify "📦 Produced blocks changed: $NOW_BLOCK/$EXP_BLOCK"
-    echo "$NOW_BLOCK" > node.blocks
-  fi
-
-  LAST_CHUNKS=$(cat node.chunks)
-  NOW_CHUNKS=$(echo "$CURRENT_VALIDATOR" | jq -c ".num_produced_chunks")
-  EXP_CHUNKS=$(echo "$CURRENT_VALIDATOR" | jq -c ".num_expected_chunks")
-
-  if [ "$LAST_CHUNKS" != "$NOW_CHUNKS" ]; then
-    notify "Produced chunks changed: $NOW_CHUNKS/$EXP_CHUNKS"
-    echo "$NOW_CHUNKS" > node.chunks
-  fi
-}
-
-function check_peers() {
-  NOW_PEERS=$(journalctl -n 10 -u neard | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g" | sed -nE "s/^.*\s([0-9]+.peers).*$/\1/p" | tail -n 1)
-  LAST_PEERS=$(cat node.peers)
-  if [ "$LAST_PEERS" != "$NOW_PEERS" ]; then
-    notify "📶 Peers changed: $NOW_PEERS"
-    echo "$NOW_PEERS" > node.peers
+    echo "$NOW_STAKE" > state.stake
   fi
 }
 
 check_online
 check_validator_status
-check_peers
