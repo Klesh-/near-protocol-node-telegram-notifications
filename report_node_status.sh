@@ -37,7 +37,7 @@ function check_validator_status() {
   echo "$VALIDATORS | $CURRENT_VALIDATOR | $NEXT_VALIDATORS | $CURRENT_PROPOSALS | $KICK_REASON"
 
   LAST_POS=$(cat state.position)
-  NOW_POS="Not listed"
+  NOW_POS=""
 
   [ -n "$CURRENT_VALIDATOR" ] && [ -z "$NOW_POS" ] && NOW_POS="✅ Validator"
   [ -n "$NEXT_VALIDATORS" ] && [ -z "$NOW_POS" ] && NOW_POS="🚀 Joining"
