@@ -50,7 +50,7 @@ function check_validator_status() {
   fi
 
   LAST_STAKE=$(cat state.stake)
-  NOW_STAKE=$(echo "$CURRENT_VALIDATOR" | jq -c ".stake")
+  NOW_STAKE=$(echo "${CURRENT_VALIDATOR:-${NEXT_VALIDATORS:-${CURRENT_PROPOSALS}}}" | jq -c ".stake")
 
   if [ "$LAST_STAKE" != "$NOW_STAKE" ]; then
     notify "💰 Stake changed: $NOW_STAKE"
