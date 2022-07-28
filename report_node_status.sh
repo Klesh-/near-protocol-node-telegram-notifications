@@ -8,14 +8,11 @@ function notify() {
     --data-urlencode "text=$*"
 }
 
-function check_online() {
-  R=$(curl -s http://$NODE_RPC/status | jq .version)
+function check_node_status() {
+  STATUS=$(curl -s http://$NODE_RPC/status)
 
+  NOW=$(echo "$STATUS" | jq -c ".version")
   LAST=$(cat state.status)
-  NOW="0"
-  if [ -n "$R" ]; then
-    NOW="1"
-  fi
 
   if [ "$LAST" != "$NOW" ]; then
     if [ "$NOW" == "0" ]; then
@@ -25,6 +22,14 @@ function check_online() {
     fi
     echo "$NOW" > state.status
   fi
+
+  NOW=$(echo "$STATUS" | jq -c ".sync_info.syncing")
+  LAST=$(cat state.syncing)
+
+  if [ "$NOW" != "$LAST" ]; then
+    notify "📦 Node syncing changed: $NOW"
+    echo "$NOW" > state.syncing
+  fi
 }
 
 function check_validator_status() {
@@ -33,8 +38,6 @@ function check_validator_status() {
   NEXT_VALIDATORS=$(echo "$VALIDATORS" | jq -c ".result.next_validators[] | select(.account_id | contains (\"$POOL_ID\"))")
   CURRENT_PROPOSALS=$(echo "$VALIDATORS" | jq -c ".result.current_proposals[] | select(.account_id | contains (\"$POOL_ID\"))")
   KICK_REASON=$(echo "$VALIDATORS" | jq -c ".result.prev_epoch_kickout[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .reason)
-
-  echo "$VALIDATORS | $CURRENT_VALIDATOR | $NEXT_VALIDATORS | $CURRENT_PROPOSALS | $KICK_REASON"
 
   LAST_POS=$(cat state.position)
   NOW_POS=""
@@ -58,5 +61,5 @@ function check_validator_status() {
   fi
 }
 
-check_online
+check_node_status
 check_validator_status
