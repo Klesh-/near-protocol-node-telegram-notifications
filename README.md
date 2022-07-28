@@ -19,7 +19,7 @@ cp .env.example .env
 ```sh
 crontab -e
 Paste:
-* * * * * /path/to/script/report_node_status.sh &> /dev/null
+* * * * * cd /path/to/script && ./report_node_status.sh &> /dev/null
 ```
 
 # Stake Wars: Episode III. Challenge 004
