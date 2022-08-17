@@ -15,7 +15,7 @@ function check_node_status() {
   LAST=$(cat state.status)
 
   if [ "$LAST" != "$NOW" ]; then
-    if [ "$NOW" == "0" ]; then
+    if [ -z "$NOW" ]; then
       notify "🚨 Node status changed: OFFLINE"
     else
       notify "✅ Node status changed: ONLINE"
